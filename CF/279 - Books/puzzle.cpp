@@ -2,55 +2,47 @@
 #include <vector>
 using namespace std;
 
+int max(int a, int b) { return (a > b ? a : b); }
+
 int main(void) {
-    int n, t, prev = 0, tmp;
+    int n, t;
     cin >> n >> t;
-    vector<int> prefix(n+1);
-    prefix[0] = 0;
+    vector<int> prefix(n);
+    int prev = 0;
     for (int i = 0; i < n; i++) {
+        int tmp;
         cin >> tmp;
-        prev = prefix[i+1] = prev + tmp;
+        prev = prefix[i] = prev + tmp;
     }
 
-    int max_span = -1;
+    int max_span = 0;
     int start = 0;
-    for (int stop = 1; stop <= n; stop++) {
-        if (prefix[stop] < t) continue;
+    for (int stop = 0; stop < n; stop++) {
+        if (prefix[stop] < t) {
+            max_span++;
+            continue;
+        }
 
-        // int step = (stop - start) / 2;
-        // int current = start + step;
-        // int prev_start = current;
+        for (int current = start; current <= stop; current++) {
+            int diff = prefix[stop] - (current == 0 ? 0 : prefix[current - 1]);
+            int span = stop - current + 1;
 
-        for (int current = start; current < stop; current++) {
-        // while (true) {
-            int diff = prefix[stop] - prefix[current];
-            int span = stop - current;
-            if (diff == t) {
-                if (span > max_span)
-                    max_span = span;
-                // start = current;
+            if (diff <= t) {
+                max_span = max(max_span, span);
+                start = (diff == t ? current + 1 : current);
+                break;
             }
+
             // a, b, ..., c, d
             // Check if either [a,c] or [b,d] has a score less than t
-            else if (diff > t) {
-                int ac = prefix[stop - 1] - prefix[current];
-                int bd = prefix[stop] - prefix[current + 1];
-                if (ac < t || bd < t) {
-                    if (span - 1 > max_span)
-                        max_span = span - 1;
-                }
-            }
-
-            // if (current == start) break;
-
-            // step = (step == 1 ? 1 : step / 2);
-
-            // t = (prefix[stop] - prefix[current] < k) ? current - step : current + step;
-            // if (t == prev_start) break;
-            // prev_start = current;
-            // current = t;
+            /*else if (diff > t)*/
+            int ac = prefix[stop - 1] - prefix[current];
+            int bd = prefix[stop] - prefix[current + 1];
+            if ((ac < t || bd < t) && span - 1 > max_span)
+                max_span = span - 1;
+            start = current + 1;
         }
     }
-    cout << ((max_span == -1) ? n : max_span) << endl;
+    cout << max_span << endl;
     return 0;
 }
